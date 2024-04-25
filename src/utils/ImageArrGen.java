@@ -31,24 +31,26 @@ public class ImageArrGen {
 		throw new IllegalStateException("How TF did you get here");
 	}
 
-	// Call to change book check main class for example
+	// Call to change book, check main class for example
 	public static InputStream[] imageToMem(String filePath) throws IOException {
-		if (filePath.contains(".cb7")) {
+		if (filePath.endsWith(".cb7")) {
 			arbitrary7z(filePath);
-		} else if (filePath.contains(".cbz")) {
+		} else if (filePath.endsWith(".cbz")) {
 			arbitrary(filePath);
-		} else if (filePath.contains(".cbt")) {
+		} else if (filePath.endsWith(".cbt")) {
 			arbitraryTar(filePath);
 		}
+
 		return getOutputter();
 	}
 
-	// I fucking called it ARBITRARY for a reason it does a bunch of random shit
+	// I fucking called it ARBITRARY for a reason, it does a bunch of random shit
+	// NOTE that this method only works on standard zip files
 	private static void arbitrary(String filePath) throws IOException {
 
 		// Initialize ui values
-		// Don't use javaFX because it doesn't support taskbar loading bars and I don't
-		// understand javaFX ui threads
+		/* Don't use javaFX because it doesn't support taskbar loading bars and I don't
+		understand javaFX ui threads*/
 		JFrame f = new JFrame("Progress Bar");
 		JPanel p = new JPanel();
 		JProgressBar b = new JProgressBar();
@@ -57,8 +59,8 @@ public class ImageArrGen {
 		ZipFile zip = new ZipFile(filePath);
 		float allPages = zip.size();
 
-		// Allocate array slots. Keep the plus one so theres a null to account for in
-		// the continue button.
+		/* Allocate array slots. Keep the plus one so theres a null to account for in
+		 the continue button.*/
 		outputter = new InputStream[(int) allPages + 1];
 
 		// Set all UI variables
@@ -91,8 +93,8 @@ public class ImageArrGen {
 			// Initialize the zipInputStream
 			try (ZipInputStream zipInput = new ZipInputStream(file)) {
 
-				// For loop for indexing all the pages. the zipInput.getNextEntry is also called
-				// when used as a variable so don't call it again.
+				/* For loop for indexing all the pages. the zipInput.getNextEntry is also called
+				 when used as a variable so don't call it again. */
 				for (int i = 0; zipInput.getNextEntry() != null; i++) {
 					// If page is bigger than 1 run
 					if (i > 1) {
@@ -106,6 +108,7 @@ public class ImageArrGen {
 					ByteArrayOutputStream inout = new ByteArrayOutputStream();
 
 					// Convert OutputStream to PNG.
+					// try again in catch to account for folders/random files
 					try {
 						ImageIO.write(ImageIO.read(zipInput), "PNG", inout);
 					}catch(IllegalArgumentException excp) {
@@ -133,11 +136,11 @@ public class ImageArrGen {
 		}
 	}
 
-	// Like arbitrary but for all 7z supported archives
+	// Like arbitrary but for 7z archives
 	private static void arbitrary7z(String filePath) throws IOException {
 		// Initialize ui values
-		// Don't use javaFX because it doesn't support taskbar loading bars and I don't
-		// understand javaFX ui threads
+		/* Don't use javaFX because it doesn't support taskbar loading bars and I don't
+		understand javaFX ui threads*/
 		JFrame f = new JFrame("Progress Bar");
 		JPanel p = new JPanel();
 		JProgressBar b = new JProgressBar();
@@ -149,8 +152,8 @@ public class ImageArrGen {
 			allPages++;
 		}
 
-		// Allocate array slots. Keep the plus one so theres a null to account for in
-		// the continue button.
+		/* Allocate array slots. Keep the plus one so theres a null to account for in
+		 the continue button.*/
 		outputter = new InputStream[(int) allPages + 1];
 
 		// Set all UI variables
@@ -176,8 +179,8 @@ public class ImageArrGen {
 		// Initialize the SevenZFile
 		try (SevenZFile zipInput = new SevenZFile(new File(filePath))) {
 			SevenZArchiveEntry entry;
-			// For loop for indexing all the pages. the zipInput.getNextEntry is also called
-			// when used as a variable so don't call it again.
+			/* For loop for indexing all the pages. the zipInput.getNextEntry is also called
+			 when used as a variable so don't call it again. */
 			for (int i = 0; (entry = zipInput.getNextEntry()) != null; i++) {
 				// If page is bigger than 1 run
 				if (i > 1) {
@@ -191,6 +194,7 @@ public class ImageArrGen {
 				ByteArrayOutputStream inout = new ByteArrayOutputStream();
 
 				// Convert OutputStream to PNG.
+				// try again in catch to account for folders/random files
 				try {
 					ImageIO.write(ImageIO.read(zipInput.getInputStream(entry)), "PNG", inout);
 				}catch(IllegalArgumentException excp) {
@@ -217,10 +221,11 @@ public class ImageArrGen {
 		}
 	}
 
+	// Like arbitrary but for tarballs
 	private static void arbitraryTar(String filePath) throws IOException {
 		// Initialize ui values
-		// Don't use javaFX because it doesn't support taskbar loading bars and I don't
-		// understand javaFX ui threads
+		/* Don't use javaFX because it doesn't support taskbar loading bars and I don't
+		 understand javaFX ui threads */
 		JFrame f = new JFrame("Progress Bar");
 		JPanel p = new JPanel();
 		JProgressBar b = new JProgressBar();
@@ -232,8 +237,8 @@ public class ImageArrGen {
 			allPages++;
 		}
 
-		// Allocate array slots. Keep the plus one so theres a null to account for in
-		// the continue button.
+		/* Allocate array slots. Keep the plus one so theres a null to account for in
+		 the continue button. */
 		outputter = new InputStream[(int) allPages + 1];
 
 		// Set all UI variables
@@ -262,8 +267,8 @@ public class ImageArrGen {
 			// Initialize the zipInputStream
 			try (TarArchiveInputStream zipInput = new TarArchiveInputStream(file)) {
 
-				// For loop for indexing all the epages. the zipInput.getNextEntry is also called
-				// when used as a variable so don't call it again.
+				/* For loop for indexing all the pages. the zipInput.getNextEntry is also called
+				when used as a variable so don't call it again. */
 				for (int i = 0; zipInput.getNextEntry() != null; i++) {
 					// If page is bigger than 1 run
 					if (i > 1) {
@@ -277,6 +282,7 @@ public class ImageArrGen {
 					ByteArrayOutputStream inout = new ByteArrayOutputStream();
 
 					// Convert OutputStream to PNG.
+					// try again in catch to account for folders/random files
 					try {
 						ImageIO.write(ImageIO.read(zipInput), "PNG", inout);
 					}catch(IllegalArgumentException excp) {
